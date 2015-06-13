@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Wolfram automaton</title>
+</head>
+<style>
+
+/* box sizing, duh... */
+*, *:after, *:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+* { padding:0; margin:0; }
+
+#rule_container {
+	max-width:200px;
+	position: relative;
+	top: 2em;
+	z-index: 2;
+	background: black;
+	color: white;
+	padding: 10px;
+}
+
+#rule {
+	text-align: center;
+	font-size: 5em;
+}
+
+canvas {
+	position:absolute;
+	top: 0;
+	left: 0;
+	margin : 0;
+	padding: 0;
+}
+
+#controls input, #line_controls input {
+	display: block;
+	margin: 2px auto;
+	/*border: 1px solid red;*/
+	width: 100%;
+}
+
+#colors {
+	overflow: hidden;
+}
+
+#colors .color {
+	float:left;
+	width: 50%;
+}
+
+#colors input {
+	width:90%;
+}
+
+.rule_number {
+	overflow: hidden;
+}
+
+.rule_number div {
+	float:left;
+}
+
+#prev_rule, #next_rule {
+	width: 5%;
+}
+
+#rule{
+	width:80%;
+}
+
+#rules {
+
+}
+</style>
+<body>
+<div id="rule_container">
+	<div class="rule_number">
+		<div id="prev_rule">&larr;</div>
+		<div id="rule"></div>
+		<div id="next_rule">&rarr;</div>
+	</div>
+	<div id="rules">
+		<input type="checkbox" data-x=7 name="r7">
+		<input type="checkbox" data-x=6 name="r6">
+		<input type="checkbox" data-x=5 name="r5">
+		<input type="checkbox" data-x=4 name="r4">
+		<input type="checkbox" data-x=3 name="r3">
+		<input type="checkbox" data-x=2 name="r2">
+		<input type="checkbox" data-x=1 name="r1">
+		<input type="checkbox" data-x=0 name="r0">
+	</div>
+	<div id="controls">
+		<input type="button" id="complement" value="complement" />
+		<input type="button" id="mirror" value="mirror" />
+	</div>
+	<div id="line_controls">
+		<input type="button" id="invert_line" value="invert line" />
+		<input type="button" id="random_line" value="random line" />
+		<input type="button" id="single_point" value="single point" />
+	</div>
+	<div id="colors">
+		<div class="color">
+			<input type=range min=0 max=255 value=10 step=1 data-color=0>
+			<input type=range min=0 max=255 value=10 step=1 data-color=1>
+			<input type=range min=0 max=255 value=10 step=1 data-color=2>
+		</div>
+		<div class="color">
+			<input type=range min=0 max=255 value=10 step=1 data-color=0>
+			<input type=range min=0 max=255 value=10 step=1 data-color=1>
+			<input type=range min=0 max=255 value=10 step=1 data-color=2>
+		</div>
+	</div>
+</div>
+</body>
+<script src="jquery-2.1.3.min.js"></script>
+<script src="wolfram_automaton.js"></script>
+</html>
