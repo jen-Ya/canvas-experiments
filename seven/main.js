@@ -9,6 +9,18 @@ var _m = Math;
 	var height = size * (num + 1) + 20;
 	var frame = 0;
 	var offset = [size/2, size/2];
+	var colors = [
+			"rgb(240,240,240)",
+			"#9fc44f",
+			"#267357",
+			"#c65953",
+			"#36a152",
+			"#7db7d4",
+			"#c29147",
+			'#eecde4',
+			'#12213a',
+			'#05040e',
+		]
 
 	var createCanvas = function(width, height){
 		var canvas = _d.createElement('canvas');
@@ -35,18 +47,6 @@ var _m = Math;
 	}
 
 	var drawCell = function(x, y, val){
-		var colors = [
-			"#dddddd",
-			"#9fc44f",
-			"#267357",
-			"#c65953",
-			"#36a152",
-			"#7db7d4",
-			"#c29147",
-			'#eecde4',
-			'#12213a',
-			'#05040e',
-		]
 		var rect = createRect(x * size, y * size + size, size, size)
 		var color = colors[val]
 		drawRect(rect, color)
@@ -158,27 +158,52 @@ var _m = Math;
 		return s;
 	}
 
-	var popAll = function(matrix){
-		var changed = false;
-		var pops = []
+	var popAll = function(matrix, onchanged, onunchanged){
+		var speed = 100;
+		var pops = [];
+		var animatePops = function(pops, speed, callback){
+			var start = Date.now();
+			var step = function(){
+				var diff = Date.now() - start;
+				var p = diff / speed;
+				if(p >= 1){
+					callback();
+				}else{
+					var color = "rgba(240,240,240,"+p+")";
+					pops.forEach(function(xy){
+						var rect = createRect(xy[0] * size, (xy[1] + 1) * size, size, size);
+						drawRect(rect, color);
+					})
+					_w.requestAnimationFrame(step);
+				};
+			}
+			_w.requestAnimationFrame(step)
+		}
 		for(var y = 0; y < num; y++){
 			for(var x = 0; x < num; x++){
 				if(mustPop(matrix, x, y)){
-					changed = true;
 					pops.push([x, y])
 				}
 			}
 		}
-		pops.forEach(function(xy){
-			var x = xy[0];
-			var y = xy[1];
-			matrix[y][x] = 0
-			breakBlocks(matrix, x, y);
-		})
-		return changed;
+		if(pops.length > 0){
+			animatePops(pops, speed, function(){
+				pops.forEach(function(xy){
+					var x = xy[0];
+					var y = xy[1];
+					matrix[y][x] = 0
+					breakBlocks(matrix, x, y);
+				})
+				onchanged();
+				return true;
+			});
+		}else{
+			onunchanged();
+			return false;
+		}
 	}
 
-	var fallAll = function(matrix){
+	var fallAll = function(matrix, onchanged, onunchanged){
 		var changed = false;
 		for(var y = num - 1; y >= 1; y--){
 			for(var x = 0; x < num; x++){
@@ -189,7 +214,13 @@ var _m = Math;
 				}
 			}
 		}
-		return changed;
+		if(changed){
+			_w.setTimeout(function(){
+				onchanged()				
+			}, 100);
+		}else{
+			onunchanged()
+		}
 	}
 
 	var createRect = function(x, y, width, height){
@@ -249,15 +280,16 @@ var _m = Math;
 			return
 		}
 		matrix[0][x] = cursor.value;
-		step();
 		cursor.value = 1 + _m.floor(_m.random() * (num + 2))
 		cursor.moves_left -=  1;
-		if(cursor.moves_left == 0){
-			cursor.moves_max = _m.max(5, cursor.moves_max - 1)
-			cursor.moves_left = cursor.moves_max
-			shiftRow(matrix);
-			step();
-		}
+		step(function(){
+			if(cursor.moves_left <= 0){
+				cursor.moves_max = _m.max(5, cursor.moves_max - 1)
+				cursor.moves_left = cursor.moves_max
+				shiftRow(matrix);
+				step();
+			}
+		});
 	}
 
 	var new_matrix = function(x, y, fun){
@@ -285,24 +317,26 @@ var _m = Math;
 		return _m.floor(_m.random() * (num + 3));
 	});
 	
-	var step = function(){
-		var speed = 500;
+	var step = function(callback){
+		var speed = 100;
 		var changed = true;
+		var pause = 500;
 		var stepPop = function(){
-			changed = popAll(matrix);
-			if(changed){
-				_w.setTimeout(stepFall, speed)
-			}else{
-				_w.requestAnimationFrame(step)
-			}
+			popAll(matrix, function(){
+				_w.setTimeout(stepFall(), 1000);
+			}, function(){
+				if(callback){
+					callback()
+				}
+			});
 		}
 		var stepFall = function(){
-			changed = fallAll(matrix);
-			if(changed){
-				_w.setTimeout(stepFall, speed)
-			}else{
-				_w.requestAnimationFrame(stepPop)
-			}
+			fallAll(matrix, function(){
+				stepFall()
+			}, function(){
+				stepPop()
+				// _w.requestAnimationFrame(stepPop)
+			});
 		}
 		stepFall(matrix);
 	}
@@ -341,7 +375,9 @@ var _m = Math;
 		var run = function(){
 			drawMatrix(matrix)
 			_w.requestAnimationFrame(draw);
-			step();
+			step(function(){
+				console.log('step done')
+			});
 		}
 
 		var testOne = function(){
