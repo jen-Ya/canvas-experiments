@@ -3,7 +3,7 @@ var _w = window;
 var _m = Math;
 // (function(_d, _w, _m){
 	'use strict'
-	var size = 60;
+	var size = _m.floor(_m.min(_w.innerWidth/7, (_w.innerHeight)/9));
 	var num = 7;
 	var width = size * num;
 	var height = size * (num + 1) + 20;
@@ -245,20 +245,16 @@ var _m = Math;
 		var x = _m.floor(event.offsetX / size);
 		var x = _m.min(_m.max(x, 0), num)
 		cursor.position = x;
-		var y = -1;
-		while(y + 1 < num && matrix[y+1][x] == 0){
-			y += 1;
-		}
-		if(y == -1){
+		if(matrix[0][x] != 0){
 			return
 		}
-		matrix[y][x] = cursor.value;
+		matrix[0][x] = cursor.value;
+		step();
 		cursor.value = 1 + _m.floor(_m.random() * (num + 2))
 		cursor.moves_left -=  1;
 		if(cursor.moves_left == 0){
 			cursor.moves_max = _m.max(5, cursor.moves_max - 1)
 			cursor.moves_left = cursor.moves_max
-			step();
 			shiftRow(matrix);
 			step();
 		}
