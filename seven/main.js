@@ -6,7 +6,7 @@ var _m = Math;
 	var size = _m.floor(_m.min(_w.innerWidth/7, (_w.innerHeight)/9));
 	var num = 7;
 	var width = size * num;
-	var height = size * (num + 1) + 20;
+	var height = size * (num + 2);
 	var frame = 0;
 	var offset = [size/2, size/2];
 	var colors = [
@@ -18,7 +18,7 @@ var _m = Math;
 			"#7db7d4",
 			"#c29147",
 			'#eecde4',
-			'#12213a',
+			'#42516a',
 			'#05040e',
 		]
 
@@ -49,7 +49,8 @@ var _m = Math;
 	var drawCell = function(x, y, val){
 		var rect = createRect(x * size, y * size + size, size, size)
 		var color = colors[val]
-		drawRect(rect, color)
+		// drawRect(rect, colors)
+		drawCircle(x*size, y*size + size, size /2, color);
 		drawNum(val, x * size, y * size + size, size)
 	}
 
@@ -126,7 +127,7 @@ var _m = Math;
 		}
 		var br = function(matrix, x, y){
 			if(matrix[y][x] == num + 1){
-				matrix[y][x] = _m.floor(_m.random() * num)
+				matrix[y][x] = 1 + _m.floor(_m.random() * (num - 1))
 				return
 			}
 			matrix[y][x] = matrix[y][x] - 1;
@@ -171,8 +172,7 @@ var _m = Math;
 				}else{
 					var color = "rgba(240,240,240,"+p+")";
 					pops.forEach(function(xy){
-						var rect = createRect(xy[0] * size, (xy[1] + 1) * size, size, size);
-						drawRect(rect, color);
+						drawCircle(xy[0] * size, (xy[1] + 1) * size, size/2, color);
 					})
 					_w.requestAnimationFrame(step);
 				};
@@ -187,6 +187,7 @@ var _m = Math;
 			}
 		}
 		if(pops.length > 0){
+			cursor.score += pops.length;
 			animatePops(pops, speed, function(){
 				pops.forEach(function(xy){
 					var x = xy[0];
@@ -247,6 +248,7 @@ var _m = Math;
 		count : 0,
 		moves_max : 14,
 		moves_left : 14,
+		score : 0,
 	}
 
 	canvas.onmousemove = function(event){
@@ -341,25 +343,33 @@ var _m = Math;
 		stepFall(matrix);
 	}
 
-	var drawClicks = function(left, max){
+	var drawMoves = function(left, max){
 		var w = size/4;
 		var m = 1;
 		for(var i = 0; i < max; i++){
 			if(i < left){
-				var color = "#12213a";
+				var color = colors[8];
 			}else{
-				var color= "#7db7d4";
+				var color= colors[5];
 			}
-			var rect = createRect(i * (w + m) - size/2 + w/2, num * size + size/2 + w/2 + m, w, w);
-			drawRect(rect, color);
+			// var rect = createRect(i * (w + m) - size/2 + w/2, num * size + size/2 + w/2 + m, w, w);
+			drawCircle(i * (w + m) - size/2 + w/2, num * size + size/2 + w/2 + m, w/2, color);
 		}
+	}
+
+	var drawScore = function(score){
+		context.fillStyle = colors[8];
+		context.font = "" + size/4 + "px Arial";
+		var text = "Score: " + score
+		context.fillText("Score: " + score, (num-2) * size, (num + 1 + 1/4) * size);
 	}
 
 	var draw = function(){
 		clearContext(context, width, height);
 		drawMatrix(matrix);
 		drawCell(cursor.position, -1, cursor.value);
-		drawClicks(cursor.moves_left, cursor.moves_max);
+		drawMoves(cursor.moves_left, cursor.moves_max);
+		drawScore(cursor.score)
 		_w.requestAnimationFrame(draw);
 		++frame;
 	}
