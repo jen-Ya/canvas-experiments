@@ -50,7 +50,7 @@ var _m = Math;
 		var rect = createRect(x * size, y * size + size, size, size)
 		var color = colors[val]
 		// drawRect(rect, colors)
-		drawCircle(x*size, y*size + size, size /2, color);
+		drawCircle(x*size, y*size + size, size/2 - 1, color);
 		drawNum(val, x * size, y * size + size, size)
 	}
 
@@ -242,29 +242,38 @@ var _m = Math;
 
 	var context = canvas.getContext("2d");
 
-	var cursor = {
-		position : 0,
-		value : 1 + _m.floor(_m.random() * (num + 2)),
-		count : 0,
-		moves_max : 14,
-		moves_left : 14,
-		score : 0,
-	}
-
 	canvas.onmousemove = function(event){
 		var x = _m.floor(event.offsetX / size);
 		var x = _m.min(_m.max(x, 0), num)
 		cursor.position = x;
 	}
 
+	var restart = function(){
+		matrix = new_matrix(num, num, function(x, y){
+			if(y < num - 3){
+				return 0;
+			}
+			return _m.floor(_m.random() * (num + 3));
+		});
+		cursor = {
+			position : 0,
+			value : 1 + _m.floor(_m.random() * (num + 2)),
+			count : 0,
+			moves_max : 14,
+			moves_left : 14,
+			score : 0,
+		}
+	}
+
 	var shiftRow = function(matrix){
 		for(var x = 0; x < num; x++){
 			if(matrix[0][x] != 0){
-				console.error('game over')
-				return;
+				alert('Score: ' + cursor.score)
+				restart()
+				return false;
 			}
 		}
-		for(var y = 1; y < num - 1; y++){
+		for(var y = 0; y < num - 1; y++){
 			for(var x = 0; x < num; x++){
 				matrix[y][x] = matrix[y+1][x]
 			}
@@ -272,6 +281,7 @@ var _m = Math;
 		for(var x = 0; x < num; x++){
 			matrix[num - 1][x] = num + 2;
 		}
+		return true;
 	}
 
 	canvas.onclick = function(event){
@@ -311,13 +321,9 @@ var _m = Math;
 	// popAll(matrix);
 	// 
 	
-	
-	var matrix = new_matrix(num, num, function(x, y){
-		if(y < num - 3){
-			return 0;
-		}
-		return _m.floor(_m.random() * (num + 3));
-	});
+	var cursor;
+	var matrix;
+	restart();
 	
 	var step = function(callback){
 		var speed = 100;
@@ -402,7 +408,7 @@ var _m = Math;
 		}
 
 		var testTwo = function(){
-			var matrix = new_matrix(7, 7)
+			var matrix = new_matrix(7, 7);
 			for(var x = 0; x < 7; x++){
 				matrix[6][x] = 7
 			}
@@ -410,6 +416,11 @@ var _m = Math;
 			assert(mustPop(matrix, 4, 6) === true)
 			assert(mustPop(matrix, 2, 6) === true)
 			assert(mustPop(matrix, 3, 6) === true)
+		}
+
+		var testThree = function(){
+			var matrix = new_matrix(7, 7);
+
 		}
 
 		var a = [run, testOne, testTwo]
